@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { useDebounce } from '@/hooks/useDebounce';
-import { analyzePasswordStrength, type AnalyzePasswordStrengthOutput } from '@/ai/flows/password-strength-analyzer';
 import PasswordStrengthIndicator from './PasswordStrengthIndicator';
 import { User, Mail, LockKeyhole, Loader2 } from 'lucide-react';
+import type { AnalyzePasswordStrengthOutput } from '@/types/password-strength';
+
 
 const signupSchema = z.object({
   name: z.string().optional(),
@@ -49,11 +50,23 @@ export default function SignupForm() {
       if (debouncedPassword && debouncedPassword.length > 0) {
         setStrengthLoading(true);
         try {
-          const result = await analyzePasswordStrength({ password: debouncedPassword });
+          const response = await fetch('/api/analyze-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: debouncedPassword }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to analyze password');
+          }
+
+          const result = await response.json();
           setPasswordStrength(result);
         } catch (error) {
           console.error("Error analyzing password strength:", error);
-          setPasswordStrength(null); // Or set an error state
+          setPasswordStrength(null);
         } finally {
           setStrengthLoading(false);
         }

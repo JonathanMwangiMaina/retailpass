@@ -3,7 +3,7 @@
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import type { AnalyzePasswordStrengthOutput } from "@/ai/flows/password-strength-analyzer";
+import type { AnalyzePasswordStrengthOutput } from "@/types/password-strength";
 
 interface PasswordStrengthIndicatorProps {
   analysis: AnalyzePasswordStrengthOutput | null;

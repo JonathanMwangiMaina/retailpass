@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useAuth } from '@/hooks/useAuth';
 import { useDebounce } from '@/hooks/useDebounce';
-import { analyzePasswordStrength, type AnalyzePasswordStrengthOutput } from '@/ai/flows/password-strength-analyzer';
 import PasswordStrengthIndicator from '@/components/auth/PasswordStrengthIndicator';
 import { LockKeyhole, Loader2 } from 'lucide-react';
+import type { AnalyzePasswordStrengthOutput } from '@/types/password-strength';
+
 
 const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, { message: 'Current password is required.' }),
@@ -46,7 +47,19 @@ export default function UpdatePasswordForm() {
       if (debouncedNewPassword && debouncedNewPassword.length > 0) {
         setStrengthLoading(true);
         try {
-          const result = await analyzePasswordStrength({ password: debouncedNewPassword });
+          const response = await fetch('/api/analyze-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ password: debouncedNewPassword }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to analyze password');
+          }
+
+          const result = await response.json();
           setPasswordStrength(result);
         } catch (error) {
           console.error("Error analyzing password strength:", error);
