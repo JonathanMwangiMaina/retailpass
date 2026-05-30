@@ -16,20 +16,25 @@ A modern authentication platform built with Next.js 15 that provides secure user
 
 ## **Architecture / System Design**
 
-RetailPass follows a modern Next.js Pages Router architecture with server-side and client-side rendering patterns:
+RetailPass follows a modern Next.js Pages Router architecture with a full-stack backend:
 
-1. **Authentication Flow**: Client-side React Context (`AuthContext`) manages user state and authentication operations. User credentials are validated and persisted in browser localStorage for session continuity.
+1. **Authentication Backend**: Production-ready authentication system with PostgreSQL/Supabase database, Prisma ORM, JWT tokens in HTTP-only cookies, and bcrypt password hashing. All authentication state managed server-side with secure session handling.
 
-2. **Password Validation Layer**: Local algorithmic password strength analysis runs through an API route (`/api/analyze-password`), providing real-time feedback based on character variety, length requirements, and common pattern detection.
+2. **Database Layer**: Prisma ORM 7 with PostgreSQL adapter connecting to Supabase managed database. Connection pooling for optimal performance. User data persisted with proper migrations and type-safe queries.
 
-3. **Component Hierarchy**: The application uses atomic design principles with shadcn/ui components at the base, composed into authentication-specific components (`SignupForm`, `LoginForm`, `ProfileForm`), wrapped in layout containers, and orchestrated by Next.js Pages Router.
+3. **API Routes**: Six RESTful authentication endpoints (`/api/auth/*`) handling signup, login, logout, profile management, password changes, and session validation. JWT middleware protects authenticated routes.
 
-4. **Data Flow**: User input → React Hook Form validation → API route analysis → Algorithmic strength calculation → Real-time UI feedback with optimized updates.
+4. **Password Security**: Dual-layer validation with real-time algorithmic strength analysis (`/api/analyze-password`) and server-side bcrypt hashing (10 rounds) for stored credentials.
+
+5. **Frontend Architecture**: React Context (`AuthContext`) manages client-side authentication state by communicating with backend API. All credentials handled via secure HTTP-only cookies, eliminating XSS vulnerabilities.
+
+6. **Component Hierarchy**: Atomic design with shadcn/ui primitives, composed into authentication forms (`SignupForm`, `LoginForm`, `ProfileForm`), orchestrated by Next.js Pages Router.
 
 ## **Prerequisites**
 
 * **Node.js** `20.x` or higher
 * **npm** `9.x` or higher
+* **Supabase Account** (free tier available at https://supabase.com)
 
 ## **Installation & Setup**
 
@@ -46,7 +51,42 @@ cd retailpass
 npm install
 ```
 
-### 3. Start the development server
+### 3. Set up Supabase Database
+
+1. Create a free Supabase account at https://supabase.com
+2. Create a new project (choose a region close to you)
+3. Get your database connection string:
+   - Go to **Project Settings** → **Database**
+   - Under **Connection string**, select **URI** mode
+   - Copy the connection string
+   - Replace `[YOUR-PASSWORD]` with your actual database password
+
+### 4. Configure Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```bash
+# JWT Secret (generate a secure random string)
+JWT_SECRET="your-secure-random-jwt-secret-here"
+
+# Supabase PostgreSQL Database
+SUPABASE_DATABASE_URL="postgresql://postgres.xxxxx:[YOUR-PASSWORD]@aws-0-region.pooler.supabase.com:5432/postgres"
+```
+
+**Generate a secure JWT secret:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 5. Run Database Migrations
+
+```bash
+npx prisma migrate dev
+```
+
+This creates the User table and other necessary database schema in your Supabase PostgreSQL database.
+
+### 6. Start the development server
 
 ```bash
 npm run dev
@@ -94,19 +134,37 @@ npm run lint
 ```
 retailpass/
 ├── pages/                     # Next.js Pages Router
-│   ├── api/                   # API routes
-│   │   └── analyze-password.ts  # Password strength API endpoint
+│   ├── api/                   # API routes (backend)
+│   │   ├── auth/              # Authentication API endpoints
+│   │   │   ├── signup.ts      # User registration
+│   │   │   ├── login.ts       # User login
+│   │   │   ├── logout.ts      # User logout
+│   │   │   ├── me.ts          # Get current user
+│   │   │   ├── profile.ts     # Update user profile
+│   │   │   └── password.ts    # Change password
+│   │   └── analyze-password.ts # Password strength API
 │   ├── _app.tsx              # App wrapper with providers
 │   ├── _document.tsx         # HTML document structure
 │   ├── index.tsx             # Home page (redirects)
 │   ├── login.tsx             # Login page
 │   ├── signup.tsx            # Signup page
 │   └── profile.tsx           # User profile page
+├── prisma/                    # Database schema & migrations
+│   ├── schema.prisma         # Prisma schema (User model)
+│   ├── migrations/           # Database migration history
+│   └── prisma.config.ts      # Prisma configuration
 ├── src/
 │   ├── components/           # React components
 │   │   ├── auth/             # Authentication components
 │   │   ├── profile/          # Profile management components
 │   │   ├── layout/           # Layout components (header, etc.)
+│   ├── lib/                   # Backend utilities
+│   │   ├── prisma.ts         # Prisma client with PostgreSQL adapter
+│   │   ├── auth.ts           # JWT token utilities
+│   │   ├── password.ts       # Password hashing (bcrypt)
+│   │   └── middleware.ts     # Authentication middleware
+│   ├── types/                 # TypeScript type definitions
+│   │   └── api.ts            # API request/response types
 │   │   ├── shared/           # Shared/common components
 │   │   └── ui/               # shadcn/ui base components
 │   ├── contexts/             # React Context providers
