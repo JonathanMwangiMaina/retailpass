@@ -1,36 +1,35 @@
 # **RetailPass**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Render Deploy](https://img.shields.io/badge/Render-Deployed-46E3B7?logo=render&logoColor=white)](https://render.com)
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.9-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-black?logo=vercel&logoColor=white)](https://vercel.com)
 
-A modern, AI-powered authentication platform built with Next.js 15 that provides secure user registration, login, and profile management with intelligent password strength analysis. RetailPass leverages Google's Gemini AI to deliver real-time password security feedback, helping users create stronger credentials.
+A modern authentication platform built with Next.js 15 that provides secure user registration, login, and profile management with intelligent password strength analysis. RetailPass delivers real-time password security feedback using algorithmic validation, helping users create stronger credentials.
 
 ## **Key Features**
 
-* **AI-Powered Password Analysis** — Integrates Google Gemini 2.0 Flash via Firebase Genkit to provide real-time password strength assessment with actionable security recommendations
+* **Smart Password Analysis** — Real-time password strength assessment with actionable security recommendations based on length, character variety, and common pattern detection
 * **Secure Authentication System** — Complete user authentication flow with session management, persistent login state, and client-side credential handling
 * **Profile Management** — Full-featured user profile interface supporting account updates, password changes, and secure session control
 * **Modern UI/UX** — Built with shadcn/ui, Radix UI primitives, and Tailwind CSS for a responsive, accessible, and visually polished experience
 
 ## **Architecture / System Design**
 
-RetailPass follows a modern Next.js App Router architecture with server-side and client-side rendering patterns:
+RetailPass follows a modern Next.js Pages Router architecture with server-side and client-side rendering patterns:
 
 1. **Authentication Flow**: Client-side React Context (`AuthContext`) manages user state and authentication operations. User credentials are validated and persisted in browser localStorage for session continuity.
 
-2. **AI Integration Layer**: Firebase Genkit acts as a middleware orchestrator, connecting React form inputs to Google's Gemini AI API. Password strength analysis requests flow through server actions to maintain API key security.
+2. **Password Validation Layer**: Local algorithmic password strength analysis runs through an API route (`/api/analyze-password`), providing real-time feedback based on character variety, length requirements, and common pattern detection.
 
-3. **Component Hierarchy**: The application uses atomic design principles with shadcn/ui components at the base, composed into authentication-specific components (`SignupForm`, `LoginForm`, `ProfileForm`), wrapped in layout containers, and orchestrated by Next.js page routes.
+3. **Component Hierarchy**: The application uses atomic design principles with shadcn/ui components at the base, composed into authentication-specific components (`SignupForm`, `LoginForm`, `ProfileForm`), wrapped in layout containers, and orchestrated by Next.js Pages Router.
 
-4. **Data Flow**: User input → React Hook Form validation → Genkit server action → Gemini AI analysis → Real-time UI feedback with debounced updates to optimize API calls.
+4. **Data Flow**: User input → React Hook Form validation → API route analysis → Algorithmic strength calculation → Real-time UI feedback with optimized updates.
 
 ## **Prerequisites**
 
 * **Node.js** `20.x` or higher
 * **npm** `9.x` or higher
-* **Google AI API Key** — Required for password strength analysis ([Get your key here](https://aistudio.google.com/app/apikey))
 
 ## **Installation & Setup**
 
@@ -47,35 +46,13 @@ cd retailpass
 npm install
 ```
 
-### 3. Configure environment variables
-
-Create a `.env.local` file in the project root:
-
-```bash
-# Development environment
-NODE_ENV=development
-
-# Google AI API Key for Genkit password strength analysis
-GOOGLE_GENAI_API_KEY=your_google_ai_api_key_here
-```
-
-**Important**: Replace `your_google_ai_api_key_here` with your actual Google AI API key from [Google AI Studio](https://aistudio.google.com/app/apikey).
-
-### 4. Start the development server
+### 3. Start the development server
 
 ```bash
 npm run dev
 ```
 
 The application will be available at `http://localhost:9002` (or `http://localhost:3000` if port 9002 is unavailable).
-
-### 5. (Optional) Start Genkit development tools
-
-For advanced AI flow debugging and monitoring:
-
-```bash
-npm run genkit:dev
-```
 
 ## **Usage**
 
@@ -116,48 +93,56 @@ npm run lint
 
 ```
 retailpass/
+├── pages/                     # Next.js Pages Router
+│   ├── api/                   # API routes
+│   │   └── analyze-password.ts  # Password strength API endpoint
+│   ├── _app.tsx              # App wrapper with providers
+│   ├── _document.tsx         # HTML document structure
+│   ├── index.tsx             # Home page (redirects)
+│   ├── login.tsx             # Login page
+│   ├── signup.tsx            # Signup page
+│   └── profile.tsx           # User profile page
 ├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── login/             # Login page route
-│   │   ├── signup/            # Signup page route
-│   │   ├── profile/           # User profile page route
-│   │   └── layout.tsx         # Root layout component
-│   ├── components/            # React components
-│   │   ├── auth/              # Authentication components
-│   │   ├── profile/           # Profile management components
-│   │   ├── shared/            # Shared/common components
-│   │   └── ui/                # shadcn/ui base components
-│   ├── contexts/              # React Context providers
-│   │   └── AuthContext.tsx   # Authentication state management
-│   ├── hooks/                 # Custom React hooks
-│   ├── ai/                    # Genkit AI flows and configuration
-│   │   ├── flows/             # AI flow definitions
-│   │   └── genkit.ts          # Genkit AI initialization
-│   └── lib/                   # Utility functions
-├── .env.local                 # Environment variables (not committed)
-├── package.json               # Project dependencies and scripts
-└── tsconfig.json              # TypeScript configuration
+│   ├── components/           # React components
+│   │   ├── auth/             # Authentication components
+│   │   ├── profile/          # Profile management components
+│   │   ├── layout/           # Layout components (header, etc.)
+│   │   ├── shared/           # Shared/common components
+│   │   └── ui/               # shadcn/ui base components
+│   ├── contexts/             # React Context providers
+│   │   └── AuthContext.tsx  # Authentication state management
+│   ├── hooks/                # Custom React hooks
+│   ├── lib/                  # Utility functions
+│   │   └── password-validator.ts  # Password strength algorithm
+│   └── types/                # TypeScript type definitions
+├── styles/                   # Global styles
+│   └── globals.css          # Tailwind CSS styles
+├── public/                   # Static assets
+├── package.json              # Project dependencies and scripts
+└── tsconfig.json             # TypeScript configuration
 ```
 
 ## **Tech Stack**
 
 | Category | Technology |
 |----------|-----------|
-| **Framework** | Next.js 15.3.3 (React 18, App Router, Turbopack) |
-| **Language** | TypeScript 5.9.3 |
-| **AI/ML** | Firebase Genkit 1.8.0, Google AI (Gemini 2.0 Flash) |
+| **Framework** | Next.js 15.3.9 (React 18, Pages Router, Turbopack) |
+| **Language** | TypeScript 5.8.2 |
+| **Password Validation** | Local algorithmic analysis (length, variety, pattern detection) |
 | **UI Library** | shadcn/ui, Radix UI primitives |
 | **Styling** | Tailwind CSS 3.4, tailwindcss-animate |
 | **Form Management** | React Hook Form 7.54 with Zod validation |
 | **State Management** | React Context API |
 | **Icons** | Lucide React |
+| **Deployment** | Vercel |
 
 ## **Key Design Patterns**
 
-* **Server Actions** — Genkit flows run as Next.js server actions to keep API keys secure and reduce client bundle size
-* **Debounced API Calls** — Password strength analysis uses a 500ms debounce to minimize unnecessary AI API requests while typing
+* **API Routes** — Password analysis runs through Next.js API routes for consistent server-side validation
+* **Pages Router Architecture** — Uses proven Next.js Pages Router for reliable SSR and static generation
 * **Atomic Design** — UI components are structured from base primitives (shadcn/ui) to composed authentication forms
 * **Type Safety** — Full TypeScript coverage with Zod schema validation for runtime type safety and form validation
+* **Client-Side Routing** — Fast navigation with window.location for authentication flows
 
 ## **Contributing**
 
