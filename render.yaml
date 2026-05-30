@@ -6,11 +6,9 @@ services:
     region: oregon
     plan: free
     branch: master
-    buildCommand: npm ci && rm -rf .next && npm run build
+    buildCommand: rm -rf .next node_modules/.cache && npm ci && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: GOOGLE_GENAI_API_KEY
-        sync: false
     healthCheckPath: /
