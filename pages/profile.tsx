@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,13 +8,17 @@ import { Loader2, UserCog } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, initialLoading, loading: authLoading } = useAuth();
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!initialLoading && !user) {
-      router.replace('/login');
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !initialLoading && !user) {
+      window.location.href = '/login';
     }
-  }, [user, initialLoading, router]);
+  }, [user, initialLoading, mounted]);
 
   if (initialLoading || !user) {
     return (

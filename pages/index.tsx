@@ -1,21 +1,24 @@
-import { useEffect } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 export default function HomePage() {
   const { user, initialLoading } = useAuth();
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!initialLoading) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !initialLoading) {
       if (user) {
-        router.replace('/profile');
+        window.location.href = '/profile';
       } else {
-        router.replace('/login');
+        window.location.href = '/login';
       }
     }
-  }, [user, initialLoading, router]);
+  }, [user, initialLoading, mounted]);
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center bg-background p-4">

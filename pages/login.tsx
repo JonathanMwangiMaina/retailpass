@@ -1,6 +1,5 @@
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import AuthFormWrapper from '@/components/shared/AuthFormWrapper';
 import LoginForm from '@/components/auth/LoginForm';
 import { useAuth } from '@/hooks/useAuth';
@@ -8,13 +7,17 @@ import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const { user, initialLoading } = useAuth();
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!initialLoading && user) {
-      router.replace('/profile');
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !initialLoading && user) {
+      window.location.href = '/profile';
     }
-  }, [user, initialLoading, router]);
+  }, [user, initialLoading, mounted]);
 
   if (initialLoading || (!initialLoading && user)) {
     return (
