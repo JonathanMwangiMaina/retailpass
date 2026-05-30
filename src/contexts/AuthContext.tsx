@@ -23,8 +23,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const LOCAL_STORAGE_KEY = 'retailpass_user';
-
 // SSR-safe navigation helper
 function navigateTo(path: string) {
   if (typeof window !== 'undefined') {
@@ -38,78 +36,188 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [initialLoading, setInitialLoading] = useState(true);
   const { toast } = useToast();
 
+  // Load initial user state from backend
   useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const loadUser = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          method: 'GET',
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user) {
+            setUser(data.user);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load user session", error);
+      } finally {
+        setInitialLoading(false);
       }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem(LOCAL_STORAGE_KEY);
-    }
-    setInitialLoading(false);
+    };
+
+    loadUser();
   }, []);
 
   const login = useCallback(async (email: string, pass: string) => {
     setLoading(true);
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (email === 'user@example.com' && pass === 'password123') {
-      const mockUser: User = { id: '1', email, name: 'Test User' };
-      setUser(mockUser);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockUser));
-      toast({ title: "Login Successful", description: "Welcome back!" });
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password: pass }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed');
+      }
+
+      setUser(data.user);
+      toast({
+        title: "Login Successful",
+        description: `Welcome back, ${data.user.name || 'User'}!`
+      });
       navigateTo('/profile');
-    } else {
-      toast({ title: "Login Failed", description: "Invalid email or password.", variant: "destructive" });
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [toast]);
 
   const signup = useCallback(async (name: string | undefined, email: string, pass: string) => {
     setLoading(true);
-    // Mock API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    const mockUser: User = { id: Date.now().toString(), email, name };
-    setUser(mockUser);
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockUser));
-    toast({ title: "Signup Successful", description: "Welcome to RetailPass!" });
-    navigateTo('/profile');
-    setLoading(false);
+    try {
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email, password: pass }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Signup failed');
+      }
+
+      setUser(data.user);
+      toast({
+        title: "Signup Successful",
+        description: "Welcome to RetailPass!"
+      });
+      navigateTo('/profile');
+    } catch (error) {
+      toast({
+        title: "Signup Failed",
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [toast]);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    localStorage.removeItem(LOCAL_STORAGE_KEY);
-    toast({ title: "Logged Out", description: "You have been successfully logged out." });
-    navigateTo('/login');
+  const logout = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Logout failed');
+      }
+
+      setUser(null);
+      toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out."
+      });
+      navigateTo('/login');
+    } catch (error) {
+      // Even if logout fails on backend, clear local state
+      setUser(null);
+      toast({
+        title: "Logged Out",
+        description: error instanceof Error ? error.message : 'Logged out with errors',
+        variant: "destructive"
+      });
+      navigateTo('/login');
+    }
   }, [toast]);
 
   const updateProfile = useCallback(async (name: string, email: string) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    if (user) {
-      const updatedUser = { ...user, name, email };
-      setUser(updatedUser);
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedUser));
-      toast({ title: "Profile Updated", description: "Your profile has been successfully updated." });
-    } else {
-      toast({ title: "Update Failed", description: "User not found.", variant: "destructive" });
+    try {
+      const response = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name, email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Profile update failed');
+      }
+
+      setUser(data.user);
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated."
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [user, toast]);
+  }, [toast]);
 
   const updatePassword = useCallback(async (currentPass: string, newPass: string) => {
     setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    // Mock password update logic
-    if (currentPass === 'password123') { // Simulate checking current password
-      toast({ title: "Password Updated", description: "Your password has been successfully updated." });
-    } else {
-      toast({ title: "Update Failed", description: "Incorrect current password.", variant: "destructive" });
+    try {
+      const response = await fetch('/api/auth/password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ currentPassword: currentPass, newPassword: newPass }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Password update failed');
+      }
+
+      toast({
+        title: "Password Updated",
+        description: "Your password has been successfully updated."
+      });
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : 'An error occurred',
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [toast]);
 
   return (
