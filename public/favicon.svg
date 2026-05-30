@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle with gradient -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6495ED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#A084CA;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="50" cy="50" r="48" fill="url(#grad1)" />
+
+  <!-- Shield/Security icon -->
+  <path d="M 50 25 L 65 30 L 65 45 Q 65 60 50 70 Q 35 60 35 45 L 35 30 Z"
+        fill="white" opacity="0.95" />
+
+  <!-- Lock icon inside shield -->
+  <rect x="46" y="45" width="8" height="10" rx="1" fill="#6495ED" />
+  <circle cx="50" cy="42" r="4" fill="none" stroke="#6495ED" stroke-width="2" />
+
+  <!-- Small "R" for RetailPass -->
+  <text x="50" y="88" font-family="Arial, sans-serif" font-size="18" font-weight="bold"
+        fill="white" text-anchor="middle">R</text>
+</svg>

@@ -5,8 +5,15 @@ import AppHeader from '@/components/layout/AppHeader';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'RetailPass',
-  description: 'Interactive user login portal for an e-commerce retail online store',
+  title: 'RetailPass - AI-Powered Authentication Platform',
+  description: 'Modern authentication platform with AI-powered password strength analysis, secure user registration, and profile management built with Next.js 15',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-simple.svg', type: 'image/svg+xml', sizes: '32x32' },
+    ],
+    apple: { url: '/icon.svg', type: 'image/svg+xml' },
+  },
 };
 
 export default function RootLayout({

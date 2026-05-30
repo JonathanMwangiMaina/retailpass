@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Background circle -->
+  <circle cx="16" cy="16" r="15" fill="#6495ED" />
+
+  <!-- Shield -->
+  <path d="M 16 8 L 22 10 L 22 16 Q 22 20 16 24 Q 10 20 10 16 L 10 10 Z"
+        fill="white" />
+
+  <!-- Lock -->
+  <rect x="14.5" y="16" width="3" height="4" rx="0.5" fill="#6495ED" />
+  <circle cx="16" cy="15" r="1.5" fill="none" stroke="#6495ED" stroke-width="0.8" />
+</svg>

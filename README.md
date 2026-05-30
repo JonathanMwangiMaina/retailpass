@@ -1,5 +1,10 @@
 # **RetailPass**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Next.js](https://img.shields.io/badge/Next.js-15.3.3-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Render Deploy](https://img.shields.io/badge/Render-Deployed-46E3B7?logo=render&logoColor=white)](https://render.com)
+
 A modern, AI-powered authentication platform built with Next.js 15 that provides secure user registration, login, and profile management with intelligent password strength analysis. RetailPass leverages Google's Gemini AI to deliver real-time password security feedback, helping users create stronger credentials.
 
 ## **Key Features**
