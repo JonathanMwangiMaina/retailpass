@@ -30,8 +30,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     try {
@@ -55,12 +60,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(mockUser);
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockUser));
       toast({ title: "Login Successful", description: "Welcome back!" });
-      router.push('/profile');
+      if (mounted) router.push('/profile');
     } else {
       toast({ title: "Login Failed", description: "Invalid email or password.", variant: "destructive" });
     }
     setLoading(false);
-  }, [router, toast]);
+  }, [router, toast, mounted]);
 
   const signup = useCallback(async (name: string | undefined, email: string, pass: string) => {
     setLoading(true);
@@ -70,16 +75,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(mockUser);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(mockUser));
     toast({ title: "Signup Successful", description: "Welcome to RetailPass!" });
-    router.push('/profile');
+    if (mounted) router.push('/profile');
     setLoading(false);
-  }, [router, toast]);
+  }, [router, toast, mounted]);
 
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     toast({ title: "Logged Out", description: "You have been successfully logged out." });
-    router.push('/login');
-  }, [router, toast]);
+    if (mounted) router.push('/login');
+  }, [router, toast, mounted]);
 
   const updateProfile = useCallback(async (name: string, email: string) => {
     setLoading(true);
