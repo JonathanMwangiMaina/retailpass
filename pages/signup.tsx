@@ -1,14 +1,12 @@
-"use client";
-
 import Link from 'next/link';
-import AuthFormWrapper from '@/components/shared/AuthFormWrapper';
-import LoginForm from '@/components/auth/LoginForm';
-import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useEffect } from 'react';
+import AuthFormWrapper from '@/components/shared/AuthFormWrapper';
+import SignupForm from '@/components/auth/SignupForm';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const { user, initialLoading } = useAuth();
   const router = useRouter();
 
@@ -25,13 +23,13 @@ export default function LoginPage() {
       </div>
     );
   }
-  
+
   return (
-    <AuthFormWrapper 
-      title="Welcome Back"
-      footer={<>Don't have an account? <Link href="/signup" className="text-primary hover:underline">Sign up</Link></>}
+    <AuthFormWrapper
+      title="Create Account"
+      footer={<>Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link></>}
     >
-      <LoginForm />
+      <SignupForm />
     </AuthFormWrapper>
   );
 }
