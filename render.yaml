@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: retailpass
+    runtime: node
+    env: node
+    region: oregon
+    plan: free
+    branch: master
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GOOGLE_GENAI_API_KEY
+        sync: false
+    healthCheckPath: /

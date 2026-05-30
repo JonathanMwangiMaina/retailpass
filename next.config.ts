@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Suppress webpack warnings for optional dependencies
+  webpack: (config, { isServer }) => {
+    // Ignore OpenTelemetry optional dependencies
+    config.ignoreWarnings = [
+      { module: /node_modules\/@opentelemetry\/sdk-node/ },
+      { module: /node_modules\/handlebars/ },
+    ];
+
+    return config;
+  },
 };
 
 export default nextConfig;
