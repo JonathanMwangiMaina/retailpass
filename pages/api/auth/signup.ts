@@ -19,18 +19,31 @@ export default async function handler(
 
     // Validate required fields
     if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+      return res.status(400).json({
+        error: 'Email and password are required',
+      });
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: 'Invalid email format' });
+      return res.status(400).json({
+        error: 'Please provide a valid email address (e.g., user@example.com)',
+      });
     }
 
     // Validate password strength (minimum 8 characters)
     if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+      return res.status(400).json({
+        error: 'Password must be at least 8 characters long',
+      });
+    }
+
+    // Validate name length if provided
+    if (name && name.length > 100) {
+      return res.status(400).json({
+        error: 'Name must not exceed 100 characters',
+      });
     }
 
     // Check if user already exists
@@ -39,7 +52,9 @@ export default async function handler(
     });
 
     if (existingUser) {
-      return res.status(409).json({ error: 'User with this email already exists' });
+      return res.status(409).json({
+        error: 'An account with this email already exists. Please log in instead.',
+      });
     }
 
     // Hash password
@@ -83,6 +98,69 @@ export default async function handler(
     return res.status(201).json({ user });
   } catch (error) {
     console.error('Signup error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+
+    // Handle specific Prisma errors
+    if (error && typeof error === 'object' && 'code' in error) {
+      const prismaError = error as { code: string; meta?: { target?: string[] } };
+
+      // Database connection errors
+      if (prismaError.code === 'P1001') {
+        console.error('Database connection error: Cannot reach database server');
+        return res.status(503).json({
+          error: 'Unable to connect to the database. Please try again later.',
+        });
+      }
+
+      if (prismaError.code === 'P1002') {
+        console.error('Database timeout error: Database server timeout');
+        return res.status(503).json({
+          error: 'Database connection timed out. Please try again.',
+        });
+      }
+
+      // Unique constraint violation (should be caught earlier, but just in case)
+      if (prismaError.code === 'P2002') {
+        const target = prismaError.meta?.target?.[0] || 'field';
+        console.error(`Unique constraint violation on: ${target}`);
+        return res.status(409).json({
+          error: 'An account with this email already exists.',
+        });
+      }
+
+      // Database table not found (migration issue)
+      if (prismaError.code === 'P2021') {
+        console.error('Database table not found - migrations may not have been run');
+        return res.status(503).json({
+          error: 'Database configuration error. Please contact support.',
+        });
+      }
+
+      // Generic Prisma error
+      console.error('Prisma error:', prismaError.code);
+      return res.status(500).json({
+        error: 'A database error occurred. Please try again.',
+      });
+    }
+
+    // Handle JWT signing errors (missing JWT_SECRET)
+    if (error instanceof Error && error.message.includes('secretOrPrivateKey')) {
+      console.error('JWT_SECRET not configured');
+      return res.status(503).json({
+        error: 'Authentication service is not properly configured. Please contact support.',
+      });
+    }
+
+    // Handle bcrypt errors
+    if (error instanceof Error && error.message.includes('bcrypt')) {
+      console.error('Password hashing error:', error.message);
+      return res.status(500).json({
+        error: 'Error processing password. Please try again.',
+      });
+    }
+
+    // Generic error fallback
+    return res.status(500).json({
+      error: 'An unexpected error occurred. Please try again later.',
+    });
   }
 }
