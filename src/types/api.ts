@@ -8,6 +8,7 @@ export interface SignupRequest {
   name?: string;
   email: string;
   password: string;
+  role?: 'ADMIN' | 'VENDOR' | 'CUSTOMER';
 }
 
 export interface SignupResponse {
@@ -37,11 +38,15 @@ export interface UpdateProfileResponse {
 }
 
 export interface UpdatePasswordRequest {
-  currentPassword: string;
+  oldPassword: string;
   newPassword: string;
 }
 
 export interface UpdatePasswordResponse {
+  message: string;
+}
+
+export interface DeleteProfileResponse {
   message: string;
 }
 

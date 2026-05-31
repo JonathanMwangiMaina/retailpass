@@ -15,7 +15,7 @@ export default async function handler(
   }
 
   try {
-    const { name, email, password } = req.body as SignupRequest;
+    const { name, email, password, role = 'CUSTOMER' } = req.body as SignupRequest;
 
     // Validate required fields
     if (!email || !password) {
@@ -46,6 +46,14 @@ export default async function handler(
       });
     }
 
+    // Validate role
+    const validRoles = ['ADMIN', 'VENDOR', 'CUSTOMER'];
+    if (role && !validRoles.includes(role)) {
+      return res.status(400).json({
+        error: 'Invalid role. Must be ADMIN, VENDOR, or CUSTOMER',
+      });
+    }
+
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
@@ -66,11 +74,13 @@ export default async function handler(
         email: email.toLowerCase(),
         name: name || null,
         passwordHash,
+        role: role as 'ADMIN' | 'VENDOR' | 'CUSTOMER',
       },
       select: {
         id: true,
         email: true,
         name: true,
+        role: true,
         emailVerified: true,
         createdAt: true,
         updatedAt: true,
